@@ -4,6 +4,7 @@ import android.support.annotation.Nullable;
 
 final class Result<T> {
     private final @Nullable Object value;
+    private @Nullable Throwable throwable;
     private boolean isSuccess;
 
     private Result(@Nullable Object o) {
@@ -15,8 +16,13 @@ final class Result<T> {
         this.value = o;
     }
 
+    private Result(@Nullable Object o, Throwable throwable) {
+        this.throwable = throwable;
+        this.value = o;
+    }
+
     boolean isSuccess() {
-        return !(value instanceof Failure);
+        return isSuccess;
     }
 
     static <T> Result<T> success(T value) {
@@ -24,8 +30,7 @@ final class Result<T> {
     }
 
     static <T> Result<T> failure(Throwable ex) {
-        return
-                new Result<T>(createFailure(ex));
+        return new Result<T>(createFailure(ex), ex);
     }
 
     private static Object createFailure(Throwable ex) {
@@ -42,9 +47,10 @@ final class Result<T> {
 
     @Nullable
     public T getValue() throws ClassCastException {
-        if (!isSuccess) {
-            return null;
-        }
-        return (T) value;
+        return isSuccess ? (T) value : null;
+    }
+
+    public String getErrorMessage() {
+        return throwable != null ? throwable.getMessage() : "";
     }
 }

@@ -3,6 +3,7 @@ package com.penopllast.loader;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.InterruptedIOException;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -54,7 +55,10 @@ public class Loader implements ILoader {
                     buf.append(line).append("\n");
                 }
                 return Result.success(buf.toString());
-            } catch (ConnectException | UnknownHostException | MalformedURLException e) {
+            } catch (InterruptedIOException
+                    | ConnectException
+                    | UnknownHostException
+                    | MalformedURLException e) {
                 return Result.failure(e);
             } finally {
                 if (reader != null) {

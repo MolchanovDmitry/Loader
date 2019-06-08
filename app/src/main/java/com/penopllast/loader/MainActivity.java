@@ -13,9 +13,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         ILoader loader = new Loader();
-        Promise<Result<String>> a = loader.load("https://www.youtube.com");
+        Promise<Result<String>> a = loader.load("https://www.youjtube.com");
         try {
-            System.out.println(a.get().getValue());
+            System.out.println(a.get().getErrorMessage());
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
