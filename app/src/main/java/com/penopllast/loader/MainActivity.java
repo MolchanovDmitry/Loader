@@ -13,6 +13,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         ILoader loader = new Loader();
-        loader.load("test");
+        loader.load("https://www.youtube.com");
     }
 }
