@@ -3,9 +3,11 @@ package com.penopllast.loader;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.ConnectException;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -14,19 +16,18 @@ public class Loader implements ILoader {
     private final Async async = new Async();
 
     @Override
-    public void load(String url) {
-        Promise<String> promise = async.submit(new LoadCallable(url));
-        //Promise<Integer> promise2 = promise.bind(string -> Promise.pure(string.length()));
-        try {
-            System.out.println("data = " + promise.get());
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
+    public Promise<Result<String>> load(String url) {
+        return async.submit(new LoadCallable(url));
     }
 
-    private static final class LoadCallable implements Callable<String> {
+    @Override
+    public void cancel() {
+        async.shutdown();
+    }
+
+    private static final class LoadCallable implements Callable<Result<String>> {
+        private static final String GET = "GET";
+        private static final int TIMEOUT = 10000;
         private final String url;
 
         LoadCallable(String url) {
@@ -34,33 +35,32 @@ public class Loader implements ILoader {
         }
 
         @Override
-        public String call() throws Exception {
+        public Result<String> call() throws Exception {
             return getContent(url);
         }
 
-        private String getContent(String path) throws IOException {
-            BufferedReader reader=null;
+        private Result<String> getContent(String path) throws IOException {
+            BufferedReader reader = null;
             try {
-                URL url=new URL(path);
-                HttpsURLConnection c=(HttpsURLConnection)url.openConnection();
-                c.setRequestMethod("GET");
-                c.setReadTimeout(10000);
+                URL url = new URL(path);
+                HttpsURLConnection c = (HttpsURLConnection) url.openConnection();
+                c.setRequestMethod(GET);
+                c.setReadTimeout(TIMEOUT);
                 c.connect();
-                reader= new BufferedReader(new InputStreamReader(c.getInputStream()));
-                StringBuilder buf=new StringBuilder();
-                String line=null;
-                while ((line=reader.readLine()) != null) {
+                reader = new BufferedReader(new InputStreamReader(c.getInputStream()));
+                StringBuilder buf = new StringBuilder();
+                String line = null;
+                while ((line = reader.readLine()) != null) {
                     buf.append(line).append("\n");
                 }
-                return(buf.toString());
-            }
-            finally {
+                return Result.success(buf.toString());
+            } catch (ConnectException | UnknownHostException | MalformedURLException e) {
+                return Result.failure(e);
+            } finally {
                 if (reader != null) {
                     reader.close();
                 }
             }
         }
-
-
     }
 }

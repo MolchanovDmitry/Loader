@@ -1,5 +1,7 @@
 package com.penopllast.loader;
 
 public interface ILoader {
-    void load(String url);
+    Promise<Result<String>> load(String url);
+
+    void cancel();
 }

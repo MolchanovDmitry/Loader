@@ -1,25 +1,31 @@
 package com.penopllast.loader;
 
-import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 final class Result<T> {
-    private final Object value;
+    private final @Nullable Object value;
     private boolean isSuccess;
 
-    public Result(Object o) {
+    private Result(@Nullable Object o) {
         this.value = o;
     }
 
-    public boolean isSuccess() {
+    private Result(@Nullable Object o, boolean isSuccess) {
+        this.isSuccess = isSuccess;
+        this.value = o;
+    }
+
+    boolean isSuccess() {
         return !(value instanceof Failure);
     }
 
-    public static <T> Result<T> success(T value) {
-        return new Result<T>(value);
+    static <T> Result<T> success(T value) {
+        return new Result<T>(value, true);
     }
 
-    public static <T> Result<T> failure(Throwable ex) {
-        return new Result<T>(createFailure(ex));
+    static <T> Result<T> failure(Throwable ex) {
+        return
+                new Result<T>(createFailure(ex));
     }
 
     private static Object createFailure(Throwable ex) {
@@ -34,9 +40,11 @@ final class Result<T> {
         }
     }
 
-    @NonNull
-    @Override
-    public String toString() {
-        return super.toString();
+    @Nullable
+    public T getValue() throws ClassCastException {
+        if (!isSuccess) {
+            return null;
+        }
+        return (T) value;
     }
 }

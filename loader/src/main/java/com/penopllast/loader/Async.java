@@ -5,7 +5,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 
-final public class Async<V> {
+final class Async<V> {
 
     private final ExecutorService executor;
 
@@ -17,11 +17,11 @@ final public class Async<V> {
         executor = Executors.newFixedThreadPool(threadCount);
     }
 
-    public void shutdown() {
+    void shutdown() {
         executor.shutdownNow();
     }
 
-    public Promise<V> submit(final Callable<V> callable) {
+    Promise<V> submit(final Callable<V> callable) {
         Promise<V> promise = new Promise<>();
         Callable<V> smarterCallable = () -> {
             try {
